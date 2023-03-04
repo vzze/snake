@@ -72,8 +72,7 @@ struct snake {
         if(current == DIRECTION::NONE)
             return;
 
-        block b = *segments.rbegin();
-        segments.push_back(b);
+        segments.push_back(*segments.rbegin());
 
         switch(current) {
             case DIRECTION::UP   : --segments.rbegin()->y; break;
@@ -97,15 +96,14 @@ struct snake {
 
             score += 500;
         } else {
-            segments.erase(segments.begin());
+            segments.pop_front();
         }
 
-        for(auto it = ++segments.rbegin(); it != segments.rend(); ++it) {
+        for(auto it = ++segments.rbegin(); it != segments.rend(); ++it)
             if(it->x == segments.rbegin()->x && it->y == segments.rbegin()->y) {
                 dead = true;
                 current = DIRECTION::NONE;
             }
-        }
     }
 };
 
@@ -121,20 +119,18 @@ void keys(char key) {
             case 's': directions.push(DIRECTION::DOWN);  break;
             case 'd': directions.push(DIRECTION::RIGHT); break;
         }
-    } else {
-        if(key == 'r') {
-            player.segments.clear();
-            player.segments.push_back(block{player.last_known.x / 2, player.last_known.y / 2});
+    } else if(key == 'r') {
+        player.segments.clear();
+        player.segments.push_back(block{player.last_known.x / 2, player.last_known.y / 2});
 
-            player.score = 0;
-            player.dead = false;
+        player.score = 0;
+        player.dead = false;
 
-            current_fruit.coord.x = mersenne() % (player.last_known.x - 1);
-            current_fruit.coord.y = mersenne() % (player.last_known.y - 1);
+        current_fruit.coord.x = mersenne() % (player.last_known.x - 1);
+        current_fruit.coord.y = mersenne() % (player.last_known.y - 1);
 
-            if(current_fruit.coord.x == 0) current_fruit.coord.x = 1;
-            if(current_fruit.coord.y == 0) current_fruit.coord.y = 1;
-        }
+        if(current_fruit.coord.x == 0) current_fruit.coord.x = 1;
+        if(current_fruit.coord.y == 0) current_fruit.coord.y = 1;
     }
 }
 
@@ -231,12 +227,12 @@ bool update(std::vector<console::Pixel> & pixels, std::size_t X, std::size_t Y, 
     });
 
     draw_border(pixels, X, Y);
+    draw_score(pixels);
+
     current_fruit.draw(pixels, X);
     player.draw(pixels, X);
 
     if(player.dead) draw_death_screen(pixels, X, Y);
-
-    draw_score(pixels);
 
     accumulator += deltaTime;
 
